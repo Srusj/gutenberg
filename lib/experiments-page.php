@@ -63,6 +63,17 @@ function gutenberg_initialize_experiments_settings() {
 			'id'    => 'gutenberg-off-canvas-navigation-editor',
 		)
 	);
+	add_settings_field(
+		'gutenberg-form-blocks',
+		__( 'Form and input blocks ', 'gutenberg' ),
+		'gutenberg_display_experiment_field',
+		'gutenberg-experiments',
+		'gutenberg_experiments_section',
+		array(
+			'label' => __( 'Test new blocks to allow building forms (Warning: The new feature is not ready. You may experience UX issues that are being addressed)', 'gutenberg' ),
+			'id'    => 'gutenberg-form-blocks',
+		)
+	);
 	register_setting(
 		'gutenberg-experiments',
 		'gutenberg-experiments'
