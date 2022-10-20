@@ -59,7 +59,7 @@ You can join us in the `#core-editor` channel in Slack, see the [WordPress Slack
 
 ## Be Creative
 
-That's why we're here, to express ourselves and share our ideas and creativity :heart:
+That's why we're here, to express ourselves and share our ideas and creativity ❤️
 
 ## License
 
