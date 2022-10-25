@@ -149,11 +149,7 @@ class Gutenberg_REST_Pattern_Directory_Controller_6_2 extends Gutenberg_REST_Pat
 		return new WP_REST_Response( $response );
 	}
 
-
-
-
-	// TODO: add docs/comments..
-	public function get_pattern_categories() {
+	public function get_pattern_categories( $request ) {
 		// TODO: check about transient and if needed with locale..
 		// $transient_key = $this->get_transient_key( $query_args );
 
