@@ -30,6 +30,8 @@ import { focus } from '@wordpress/dom';
 import usePatternsState from './hooks/use-patterns-state';
 import BlockPatternList from '../block-patterns-list';
 import PatternsExplorerModal from './block-patterns-explorer/explorer';
+import { store as blockEditorStore } from '../../store';
+import { useSelect } from '@wordpress/data';
 
 function usePatternsCategories() {
 	const [ allPatterns, allCategories ] = usePatternsState();
@@ -178,7 +180,13 @@ function BlockPatternsTabs( {
 	const [ showPatternsExplorer, setShowPatternsExplorer ] = useState( false );
 	const categories = usePatternsCategories();
 	const isMobile = useViewportMatch( 'medium', '<' );
-
+	const { getSettings } = useSelect( blockEditorStore );
+	useEffect( () => {
+		getSettings().__experimentalOnInserterPatternTabOpen();
+		return () => {
+			getSettings().__experimentalOnInserterPatternTabClose();
+		};
+	}, [] );
 	return (
 		<>
 			{ ! isMobile && (
