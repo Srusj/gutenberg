@@ -30,14 +30,6 @@ import useAvailableAlignments from '../block-alignment-control/use-available-ali
 import { store as blockEditorStore } from '../../store';
 import { getValidAlignments } from '../../hooks/align';
 
-function getCSSPropertyValue( element, property ) {
-	if ( ! element ) return;
-
-	return element.ownerDocument.defaultView
-		.getComputedStyle( element )
-		.getPropertyValue( property );
-}
-
 export default function BlockAlignmentVisualizer( {
 	allowedAlignments,
 	clientId,
@@ -156,6 +148,16 @@ export default function BlockAlignmentVisualizer( {
 			.filter( ( alignment ) => alignment !== null );
 	}, [ availableAlignments, layout ] );
 
+	const contrastColor = useMemo( () => {
+		if ( ! blockElement ) {
+			return;
+		}
+
+		return blockElement.ownerDocument.defaultView
+			.getComputedStyle( blockElement )
+			.getPropertyValue( 'color' );
+	}, [ blockElement ] );
+
 	const popoverRef = useRef();
 
 	if ( availableAlignments?.length === 0 ) {
@@ -180,10 +182,7 @@ export default function BlockAlignmentVisualizer( {
 					<style>
 						{ `
 							:root {
-								--wp-admin-theme-color: ${ getCSSPropertyValue(
-									popoverRef.current,
-									'--wp-admin-theme-color'
-								) }
+								--contrast-color: ${ contrastColor }
 							}
 
 							html {
@@ -198,7 +197,7 @@ export default function BlockAlignmentVisualizer( {
 								bottom: 0;
 								left: 0;
 								pointer-events: none !important;
-								background-color: var(--wp-admin-theme-color);
+								background-color: var(--contrast-color);
 								opacity: 0.1;
 							}
 
@@ -216,8 +215,8 @@ export default function BlockAlignmentVisualizer( {
 								max-width: 100%;
 								margin: 0 auto;
 								opacity: 0.7;
-								border-left: solid 2px var(--wp-admin-theme-color);
-								border-right: solid 2px var(--wp-admin-theme-color);
+								border-left: solid 2px var(--contrast-color);
+								border-right: solid 2px var(--contrast-color);
 							}
 						` }
 					</style>
@@ -233,6 +232,7 @@ export default function BlockAlignmentVisualizer( {
 							key={ alignment.name }
 							alignment={ alignment }
 							justification={ layout.justifyContent }
+							color={ contrastColor }
 						/>
 					) ) }
 				</body>
@@ -241,7 +241,7 @@ export default function BlockAlignmentVisualizer( {
 	);
 }
 
-function BlockAlignmentVisualizerZone( { alignment, justification } ) {
+function BlockAlignmentVisualizerZone( { alignment, justification, color } ) {
 	const [ popoverAnchor, setPopoverAnchor ] = useState( null );
 
 	return (
@@ -270,7 +270,10 @@ function BlockAlignmentVisualizerZone( { alignment, justification } ) {
 				variant="unstyled"
 				flip
 			>
-				<div className="block-editor__alignment-visualizer-zone-label">
+				<div
+					className="block-editor__alignment-visualizer-zone-label"
+					style={ { color } }
+				>
 					{ alignment.label }
 				</div>
 			</Popover>
