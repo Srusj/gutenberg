@@ -3,24 +3,7 @@
 	overflow: hidden;
 }
 
-.block-editor__alignment-visualizer-step-inner {
-	pointer-events: none !important;
-	height: 100%;
-	max-width: 100%;
-	margin: 0 auto;
-	opacity: 0.7;
-	border-left: solid 2px var(--wp-admin-theme-color);
-	border-right: solid 2px var(--wp-admin-theme-color);
-}
-
-// TODO - make this a popover style variation.
-.block-editor__alignment-visualizer-step-label-popover .components-popover__content {
-	outline: none;
-	box-shadow: none;
-	background: none;
-}
-
-.block-editor__alignment-visualizer-step-label {
+.block-editor__alignment-visualizer-zone-label {
 	font-size: $default-font-size;
 	font-weight: bold;
 	text-transform: uppercase;

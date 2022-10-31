@@ -202,7 +202,7 @@ export default function BlockAlignmentVisualizer( {
 								opacity: 0.1;
 							}
 
-							.block-editor__alignment-visualizer-step {
+							.block-editor__alignment-visualizer-zone {
 								position: absolute;
 								top: 0;
 								bottom: 0;
@@ -210,7 +210,7 @@ export default function BlockAlignmentVisualizer( {
 								right: 0;
 							}
 
-							.block-editor__alignment-visualizer-step-inner {
+							.block-editor__alignment-visualizer-zone-inner {
 								pointer-events: none !important;
 								height: 100%;
 								max-width: 100%;
@@ -224,12 +224,12 @@ export default function BlockAlignmentVisualizer( {
 					<LayoutStyle
 						blockName={ parentBlockName }
 						layout={ layout }
-						selector=".block-editor__alignment-visualizer-step"
+						selector=".block-editor__alignment-visualizer-zone"
 					/>
 				</head>
 				<body className="editor-styles-wrapper">
 					{ alignments.map( ( alignment ) => (
-						<BlockAlignmentVisualizerStep
+						<BlockAlignmentVisualizerZone
 							key={ alignment.name }
 							alignment={ alignment }
 							justification={ layout.justifyContent }
@@ -241,14 +241,14 @@ export default function BlockAlignmentVisualizer( {
 	);
 }
 
-function BlockAlignmentVisualizerStep( { alignment, justification } ) {
+function BlockAlignmentVisualizerZone( { alignment, justification } ) {
 	const [ popoverAnchor, setPopoverAnchor ] = useState( null );
 
 	return (
 		<>
 			<div
 				className={ classnames(
-					'block-editor__alignment-visualizer-step',
+					'block-editor__alignment-visualizer-zone',
 					{
 						[ `is-content-justification-${ justification }` ]:
 							justification,
@@ -257,7 +257,7 @@ function BlockAlignmentVisualizerStep( { alignment, justification } ) {
 			>
 				<div
 					className={ classnames(
-						'block-editor__alignment-visualizer-step-inner',
+						'block-editor__alignment-visualizer-zone-inner',
 						alignment.className
 					) }
 					ref={ setPopoverAnchor }
@@ -265,11 +265,12 @@ function BlockAlignmentVisualizerStep( { alignment, justification } ) {
 			</div>
 			<Popover
 				anchor={ popoverAnchor }
-				className="block-editor__alignment-visualizer-step-label-popover"
+				className="block-editor__alignment-visualizer-zone-label-popover"
 				placement="top-end"
+				variant="unstyled"
 				flip
 			>
-				<div className="block-editor__alignment-visualizer-step-label">
+				<div className="block-editor__alignment-visualizer-zone-label">
 					{ alignment.label }
 				</div>
 			</Popover>
