@@ -8,7 +8,7 @@ import classnames from 'classnames';
  */
 import { getBlockSupport, hasBlockSupport } from '@wordpress/blocks';
 import { Popover } from '@wordpress/components';
-import { useRefEffect } from '@wordpress/compose';
+import { useMergeRefs, useRefEffect } from '@wordpress/compose';
 import { useSelect } from '@wordpress/data';
 import {
 	createPortal,
@@ -29,6 +29,31 @@ import { __unstableUseBlockElement as useBlockElement } from '../block-list/use-
 import useAvailableAlignments from '../block-alignment-control/use-available-alignments';
 import { store as blockEditorStore } from '../../store';
 import { getValidAlignments } from '../../hooks/align';
+import { getDistanceToNearestEdge } from '../../utils/math';
+
+const highlightedZoneEdges = [ 'right' ];
+function detectNearestZone( mouseMoveEvent, zones ) {
+	const { clientX, clientY } = mouseMoveEvent;
+	const point = { x: clientX, y: clientY };
+
+	let candidateZone;
+	let candidateDistance;
+
+	zones?.forEach( ( zone ) => {
+		const [ distance ] = getDistanceToNearestEdge(
+			point,
+			zone.node.getBoundingClientRect(),
+			highlightedZoneEdges
+		);
+
+		if ( ! candidateDistance || candidateDistance > distance ) {
+			candidateDistance = distance;
+			candidateZone = zone;
+		}
+	} );
+
+	return candidateZone;
+}
 
 export default function BlockAlignmentVisualizer( {
 	allowedAlignments,
@@ -53,6 +78,8 @@ export default function BlockAlignmentVisualizer( {
 
 	const [ popoverAnchor, setPopoverAnchor ] = useState( null );
 	const [ coverElementStyle, setCoverElementStyle ] = useState( null );
+	const [ highlightedZone, setHighlightedZone ] = useState();
+	const zones = useRef( new Set() );
 	const blockElement = useBlockElement( clientId );
 	const parentBlockElement = useBlockElement( parentClientId );
 	const rootBlockListElement = useContext(
@@ -169,10 +196,18 @@ export default function BlockAlignmentVisualizer( {
 			ref={ popoverRef }
 			anchor={ popoverAnchor }
 			placement="top-start"
+			className="block-editor__alignment-visualizer"
 			animate={ false }
 			focusOnMount={ false }
 			flip={ false }
 			resize={ false }
+			__unstableSlotName=""
+			onMouseMove={ ( event ) => {
+				const nearestZone = detectNearestZone( event, zones.current );
+				if ( nearestZone.name !== highlightedZone ) {
+					setHighlightedZone( nearestZone.name );
+				}
+			} }
 		>
 			<Iframe
 				style={ coverElementStyle }
@@ -196,7 +231,6 @@ export default function BlockAlignmentVisualizer( {
 								right: 0;
 								bottom: 0;
 								left: 0;
-								pointer-events: none !important;
 								background-color: var(--contrast-color);
 								opacity: 0.1;
 							}
@@ -210,7 +244,6 @@ export default function BlockAlignmentVisualizer( {
 							}
 
 							.block-editor__alignment-visualizer-zone-inner {
-								pointer-events: none !important;
 								height: 100%;
 								max-width: 100%;
 								margin: 0 auto;
@@ -233,6 +266,11 @@ export default function BlockAlignmentVisualizer( {
 							alignment={ alignment }
 							justification={ layout.justifyContent }
 							color={ contrastColor }
+							isHighlighted={ alignment.name === highlightedZone }
+							addZone={ ( zone ) => zones.current.add( zone ) }
+							removeZone={ ( zone ) =>
+								zones.current.delete( zone )
+							}
 						/>
 					) ) }
 				</body>
@@ -241,8 +279,30 @@ export default function BlockAlignmentVisualizer( {
 	);
 }
 
-function BlockAlignmentVisualizerZone( { alignment, justification, color } ) {
+function BlockAlignmentVisualizerZone( {
+	alignment,
+	justification,
+	color,
+	isHighlighted,
+	addZone,
+	removeZone,
+} ) {
 	const [ popoverAnchor, setPopoverAnchor ] = useState( null );
+	const { name } = alignment;
+
+	const updateZonesRef = useRefEffect(
+		( node ) => {
+			const zone = {
+				name,
+				node,
+			};
+			addZone( zone );
+			return () => removeZone( zone );
+		},
+		[ name ]
+	);
+
+	const zoneInnerRefs = useMergeRefs( [ updateZonesRef, setPopoverAnchor ] );
 
 	return (
 		<>
@@ -260,7 +320,7 @@ function BlockAlignmentVisualizerZone( { alignment, justification, color } ) {
 						'block-editor__alignment-visualizer-zone-inner',
 						alignment.className
 					) }
-					ref={ setPopoverAnchor }
+					ref={ zoneInnerRefs }
 				/>
 			</div>
 			<Popover
@@ -271,7 +331,10 @@ function BlockAlignmentVisualizerZone( { alignment, justification, color } ) {
 				flip
 			>
 				<div
-					className="block-editor__alignment-visualizer-zone-label"
+					className={ classnames(
+						'block-editor__alignment-visualizer-zone-label',
+						{ 'is-highlighted': isHighlighted }
+					) }
 					style={ { color } }
 				>
 					{ alignment.label }

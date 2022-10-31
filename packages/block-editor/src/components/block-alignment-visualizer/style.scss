@@ -1,5 +1,9 @@
+
+.block-editor__alignment-visualizer {
+	z-index: 0;
+}
+
 .block-editor__alignment-visualizer-iframe {
-	pointer-events: none;
 	overflow: hidden;
 }
 
@@ -9,5 +13,10 @@
 	text-transform: uppercase;
 	white-space: nowrap;
 	margin: $grid-unit-05 0;
-	opacity: 0.7;
+	opacity: 0;
+	transition: opacity 0.1s linear;
+
+	&.is-highlighted {
+		opacity: 0.7;
+	}
 }
