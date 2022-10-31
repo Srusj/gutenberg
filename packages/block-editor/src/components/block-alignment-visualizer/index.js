@@ -32,10 +32,7 @@ import { getValidAlignments } from '../../hooks/align';
 import { getDistanceToNearestEdge } from '../../utils/math';
 
 const highlightedZoneEdges = [ 'right' ];
-function detectNearestZone( mouseMoveEvent, zones ) {
-	const { clientX, clientY } = mouseMoveEvent;
-	const point = { x: clientX, y: clientY };
-
+function detectNearestZone( point, zones ) {
 	let candidateZone;
 	let candidateDistance;
 
@@ -58,6 +55,7 @@ function detectNearestZone( mouseMoveEvent, zones ) {
 export default function BlockAlignmentVisualizer( {
 	allowedAlignments,
 	clientId,
+	showNearestAlignmentToCoords,
 } ) {
 	const layout = useLayout();
 	const { blockName, parentClientId, parentBlockName } = useSelect(
@@ -85,6 +83,18 @@ export default function BlockAlignmentVisualizer( {
 	const rootBlockListElement = useContext(
 		BlockList.__unstableElementContext
 	);
+
+	useEffect( () => {
+		if ( showNearestAlignmentToCoords ) {
+			const nearestZone = detectNearestZone(
+				showNearestAlignmentToCoords,
+				zones.current
+			);
+			if ( nearestZone?.name !== highlightedZone ) {
+				setHighlightedZone( nearestZone?.name );
+			}
+		}
+	}, [ showNearestAlignmentToCoords ] );
 
 	useEffect( () => {
 		const parentElement = parentBlockElement ?? rootBlockListElement;
@@ -202,12 +212,6 @@ export default function BlockAlignmentVisualizer( {
 			flip={ false }
 			resize={ false }
 			__unstableSlotName=""
-			onMouseMove={ ( event ) => {
-				const nearestZone = detectNearestZone( event, zones.current );
-				if ( nearestZone.name !== highlightedZone ) {
-					setHighlightedZone( nearestZone.name );
-				}
-			} }
 		>
 			<Iframe
 				style={ coverElementStyle }

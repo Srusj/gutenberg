@@ -10,7 +10,6 @@ import { isBlobURL } from '@wordpress/blob';
 import {
 	ExternalLink,
 	PanelBody,
-	ResizableBox,
 	Spinner,
 	TextareaControl,
 	TextControl,
@@ -31,7 +30,6 @@ import {
 	__experimentalImageEditingProvider as ImageEditingProvider,
 	__experimentalGetElementClassName,
 	__experimentalUseBorderProps as useBorderProps,
-	__experimentalBlockAlignmentVisualizer as BlockAlignmentVisualizer,
 } from '@wordpress/block-editor';
 import {
 	useEffect,
@@ -40,7 +38,7 @@ import {
 	useRef,
 	useCallback,
 } from '@wordpress/element';
-import { __, sprintf, isRTL } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { getFilename } from '@wordpress/url';
 import {
 	createBlock,
@@ -62,6 +60,7 @@ import { store as coreStore } from '@wordpress/core-data';
 import { createUpgradedEmbedBlock } from '../embed/util';
 import useClientWidth from './use-client-width';
 import { isExternalImage } from './edit';
+import ResizableImageControls from './resizable-image-controls';
 
 /**
  * Module constants
@@ -163,7 +162,6 @@ export default function Image( {
 		setLoadedNaturalSize,
 	] = useState( {} );
 	const [ isEditingImage, setIsEditingImage ] = useState( false );
-	const [ isResizingImage, setIsResizingImage ] = useState( false );
 	const [ externalBlob, setExternalBlob ] = useState();
 	const clientWidth = useClientWidth( containerRef, [ align ] );
 	const isResizable =
@@ -234,12 +232,10 @@ export default function Image( {
 
 	function onResizeStart() {
 		toggleSelection( false );
-		setIsResizingImage( true );
 	}
 
 	function onResizeStop() {
 		toggleSelection( true );
-		setIsResizingImage( false );
 	}
 
 	function onImageError() {
@@ -556,75 +552,30 @@ export default function Image( {
 		// becomes available.
 		const maxWidthBuffer = maxWidth * 2.5;
 
-		let showRightHandle = false;
-		let showLeftHandle = false;
-
-		/* eslint-disable no-lonely-if */
-		// See https://github.com/WordPress/gutenberg/issues/7584.
-		if ( align === 'center' ) {
-			// When the image is centered, show both handles.
-			showRightHandle = true;
-			showLeftHandle = true;
-		} else if ( isRTL() ) {
-			// In RTL mode the image is on the right by default.
-			// Show the right handle and hide the left handle only when it is
-			// aligned left. Otherwise always show the left handle.
-			if ( align === 'left' ) {
-				showRightHandle = true;
-			} else {
-				showLeftHandle = true;
-			}
-		} else {
-			// Show the left handle and hide the right handle only when the
-			// image is aligned right. Otherwise always show the right handle.
-			if ( align === 'right' ) {
-				showLeftHandle = true;
-			} else {
-				showRightHandle = true;
-			}
-		}
-		/* eslint-enable no-lonely-if */
-
 		img = (
-			<>
-				{ isResizingImage && (
-					<BlockAlignmentVisualizer
-						clientId={ clientId }
-						allowedAlignments={ [ 'none', 'wide', 'full' ] }
-					/>
-				) }
-				<ResizableBox
-					size={ {
-						width: width ?? 'auto',
-						height: height && ! hasCustomBorder ? height : 'auto',
-					} }
-					showHandle={ isSelected }
-					minWidth={ minWidth }
-					maxWidth={ maxWidthBuffer }
-					minHeight={ minHeight }
-					maxHeight={ maxWidthBuffer / ratio }
-					lockAspectRatio
-					enable={ {
-						top: false,
-						right: showRightHandle,
-						bottom: true,
-						left: showLeftHandle,
-					} }
-					onResizeStart={ onResizeStart }
-					onResizeStop={ ( event, direction, elt, delta ) => {
-						onResizeStop();
-						setAttributes( {
-							width: parseInt( currentWidth + delta.width, 10 ),
-							height: parseInt(
-								currentHeight + delta.height,
-								10
-							),
-						} );
-					} }
-				>
-					{ img }
-				</ResizableBox>
-			</>
+			<ResizableImageControls
+				align={ align }
+				clientId={ clientId }
+				minWidth={ minWidth }
+				maxWidth={ maxWidthBuffer }
+				minHeight={ minHeight }
+				maxHeight={ maxWidthBuffer / ratio }
+				onResizeStart={ onResizeStart }
+				onResizeStop={ ( event, direction, elt, delta ) => {
+					onResizeStop();
+					setAttributes( {
+						width: parseInt( currentWidth + delta.width, 10 ),
+						height: parseInt( currentHeight + delta.height, 10 ),
+					} );
+				} }
+				showHandle={ isSelected }
+				size={ {
+					width: width ?? 'auto',
+					height: height && ! hasCustomBorder ? height : 'auto',
+				} }
+			>
+				{ img }
+			</ResizableImageControls>
 		);
 	}
 
